@@ -599,6 +599,39 @@
 
         /* Loading states */
         .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        /* Form container styles */
+        .form-container {
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+
+        .form-container:hover {
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Enhanced form validation */
+        .form-input:invalid,
+        .form-select:invalid {
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+        }
+
+        .form-input:focus:invalid,
+        .form-select:focus:invalid {
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+        }
+
+        /* Required field indicator */
+        .form-label[for*="required"]::after {
+            content: " *";
+            color: #dc2626;
+        }
+        .loading {
             opacity: 0.6;
             pointer-events: none;
         }
@@ -897,8 +930,94 @@
                     إضافة عضو جديد
                 </button>
 
+                <!-- نموذج إضافة/تعديل العضو -->
+                <div id="memberForm" class="form-container" style="display: none; margin-top: 25px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
+                    <div class="section-header">
+                        <div class="section-title" id="memberFormTitle">
+                            <i class="fas fa-user-plus"></i>
+                            إضافة عضو جديد
+                        </div>
+                    </div>
+                    
+                    <form id="addMemberForm" onsubmit="saveMember(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">الاسم الأول *</label>
+                                <input type="text" class="form-input" id="firstName" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">اسم الأب *</label>
+                                <input type="text" class="form-input" id="fatherName" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">اسم الجد *</label>
+                                <input type="text" class="form-input" id="grandfatherName" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">اسم العائلة *</label>
+                                <input type="text" class="form-input" id="familyName" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">رقم الهوية الوطنية *</label>
+                                <input type="text" class="form-input" id="nationalId" required maxlength="10">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">تاريخ الميلاد *</label>
+                                <input type="date" class="form-input" id="birthDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">رقم الجوال *</label>
+                                <input type="tel" class="form-input" id="phone" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">البريد الإلكتروني</label>
+                                <input type="email" class="form-input" id="email">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">نوع العضوية *</label>
+                                <select class="form-select" id="membershipType" required>
+                                    <option value="">اختر نوع العضوية</option>
+                                    <option value="عضو عامل">عضو عامل</option>
+                                    <option value="عضو تابع">عضو تابع</option>
+                                    <option value="عضو قاضي">عضو قاضي</option>
+                                    <option value="عضو شرفي">عضو شرفي</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">الحالة *</label>
+                                <select class="form-select" id="status" required>
+                                    <option value="">اختر الحالة</option>
+                                    <option value="نشط">نشط</option>
+                                    <option value="غير نشط">غير نشط</option>
+                                    <option value="في الانتظار">في الانتظار</option>
+                                    <option value="معلق">معلق</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">العنوان</label>
+                                <textarea class="form-input" id="address" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">ملاحظات</label>
+                                <textarea class="form-input" id="notes" rows="3"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions" style="margin-top: 25px; display: flex; gap: 15px; justify-content: flex-end;">
+                            <button type="button" class="btn btn-secondary" onclick="cancelMemberForm()">
+                                <i class="fas fa-times"></i>
+                                إلغاء
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="saveMemberBtn">
+                                <i class="fas fa-save"></i>
+                                حفظ العضو
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
                 <div class="table-container" style="margin-top: 25px;">
-                    <table class="table">
+                    <table class="table" id="membersTable">
                         <thead>
                             <tr>
                                 <th>رقم العضوية</th>
@@ -910,47 +1029,47 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
+                            <tr data-member-id="001">
                                 <td>001</td>
                                 <td>أحمد محمد علي</td>
                                 <td>عضو عامل</td>
                                 <td><span class="status-badge status-active">نشط</span></td>
                                 <td>2024/01/15</td>
                                 <td>
-                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="editMember('001')">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">
+                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="deleteMember('001')">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr data-member-id="002">
                                 <td>002</td>
                                 <td>فاطمة أحمد حسن</td>
                                 <td>عضو تابع</td>
                                 <td><span class="status-badge status-active">نشط</span></td>
                                 <td>2024/02/20</td>
                                 <td>
-                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="editMember('002')">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">
+                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="deleteMember('002')">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr data-member-id="003">
                                 <td>003</td>
                                 <td>محمد سعيد عبدالله</td>
                                 <td>عضو قاضي</td>
                                 <td><span class="status-badge status-pending">في الانتظار</span></td>
                                 <td>2024/03/10</td>
                                 <td>
-                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="editMember('003')">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">
+                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="deleteMember('003')">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
@@ -2476,8 +2595,256 @@
             sidebar.classList.toggle('open');
         }
 
+        // متغيرات عامة لإدارة الأعضاء
+        let currentMemberId = null;
+        let membersData = {
+            '001': {
+                firstName: 'أحمد',
+                fatherName: 'محمد',
+                grandfatherName: 'علي',
+                familyName: 'علي',
+                nationalId: '1234567890',
+                birthDate: '1985-06-15',
+                phone: '0501234567',
+                email: 'ahmed@example.com',
+                membershipType: 'عضو عامل',
+                status: 'نشط',
+                address: 'الرياض، المملكة العربية السعودية',
+                notes: 'عضو نشط ومشارك في الأنشطة'
+            },
+            '002': {
+                firstName: 'فاطمة',
+                fatherName: 'أحمد',
+                grandfatherName: 'حسن',
+                familyName: 'حسن',
+                nationalId: '0987654321',
+                birthDate: '1990-03-22',
+                phone: '0509876543',
+                email: 'fatima@example.com',
+                membershipType: 'عضو تابع',
+                status: 'نشط',
+                address: 'جدة، المملكة العربية السعودية',
+                notes: 'عضو تابع للعضو الرئيسي'
+            },
+            '003': {
+                firstName: 'محمد',
+                fatherName: 'سعيد',
+                grandfatherName: 'عبدالله',
+                familyName: 'عبدالله',
+                nationalId: '1122334455',
+                birthDate: '1978-12-10',
+                phone: '0501122334',
+                email: 'mohammed@example.com',
+                membershipType: 'عضو قاضي',
+                status: 'في الانتظار',
+                address: 'الدمام، المملكة العربية السعودية',
+                notes: 'في انتظار موافقة مجلس الإدارة'
+            }
+        };
+
         function showAddMemberForm() {
-            alert('سيتم فتح نموذج إضافة عضو جديد');
+            currentMemberId = null;
+            document.getElementById('memberFormTitle').innerHTML = '<i class="fas fa-user-plus"></i> إضافة عضو جديد';
+            document.getElementById('saveMemberBtn').innerHTML = '<i class="fas fa-save"></i> حفظ العضو';
+            
+            // تفريغ النموذج
+            document.getElementById('addMemberForm').reset();
+            
+            // إظهار النموذج
+            document.getElementById('memberForm').style.display = 'block';
+            
+            // التمرير للنموذج
+            document.getElementById('memberForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function editMember(memberId) {
+            currentMemberId = memberId;
+            const member = membersData[memberId];
+            
+            if (!member) {
+                showAlert('لم يتم العثور على بيانات العضو', 'error');
+                return;
+            }
+            
+            document.getElementById('memberFormTitle').innerHTML = '<i class="fas fa-user-edit"></i> تعديل بيانات العضو';
+            document.getElementById('saveMemberBtn').innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
+            
+            // ملء النموذج بالبيانات
+            document.getElementById('firstName').value = member.firstName;
+            document.getElementById('fatherName').value = member.fatherName;
+            document.getElementById('grandfatherName').value = member.grandfatherName;
+            document.getElementById('familyName').value = member.familyName;
+            document.getElementById('nationalId').value = member.nationalId;
+            document.getElementById('birthDate').value = member.birthDate;
+            document.getElementById('phone').value = member.phone;
+            document.getElementById('email').value = member.email;
+            document.getElementById('membershipType').value = member.membershipType;
+            document.getElementById('status').value = member.status;
+            document.getElementById('address').value = member.address;
+            document.getElementById('notes').value = member.notes;
+            
+            // إظهار النموذج
+            document.getElementById('memberForm').style.display = 'block';
+            
+            // التمرير للنموذج
+            document.getElementById('memberForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelMemberForm() {
+            document.getElementById('memberForm').style.display = 'none';
+            currentMemberId = null;
+        }
+
+        function saveMember(event) {
+            event.preventDefault();
+            
+            // التحقق من صحة البيانات
+            if (!validateMemberForm()) {
+                return;
+            }
+            
+            const saveBtn = document.getElementById('saveMemberBtn');
+            showLoading(saveBtn);
+            
+            // جمع البيانات من النموذج
+            const memberData = {
+                firstName: document.getElementById('firstName').value.trim(),
+                fatherName: document.getElementById('fatherName').value.trim(),
+                grandfatherName: document.getElementById('grandfatherName').value.trim(),
+                familyName: document.getElementById('familyName').value.trim(),
+                nationalId: document.getElementById('nationalId').value.trim(),
+                birthDate: document.getElementById('birthDate').value,
+                phone: document.getElementById('phone').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                membershipType: document.getElementById('membershipType').value,
+                status: document.getElementById('status').value,
+                address: document.getElementById('address').value.trim(),
+                notes: document.getElementById('notes').value.trim()
+            };
+            
+            setTimeout(() => {
+                if (currentMemberId) {
+                    // تحديث عضو موجود
+                    membersData[currentMemberId] = memberData;
+                    updateMemberInTable(currentMemberId, memberData);
+                    showAlert('تم تحديث بيانات العضو بنجاح', 'success');
+                } else {
+                    // التحقق من عدم تكرار رقم الهوية
+                    if (isNationalIdExists(memberData.nationalId)) {
+                        hideLoading(saveBtn);
+                        showAlert('رقم الهوية الوطنية مسجل مسبقاً', 'error');
+                        return;
+                    }
+                    
+                    // إضافة عضو جديد
+                    const newId = generateNewMemberId();
+                    membersData[newId] = memberData;
+                    addMemberToTable(newId, memberData);
+                    showAlert('تم إضافة العضو الجديد بنجاح', 'success');
+                }
+                
+                hideLoading(saveBtn);
+                cancelMemberForm();
+            }, 1500);
+        }
+
+        function validateMemberForm() {
+            const nationalId = document.getElementById('nationalId').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const email = document.getElementById('email').value.trim();
+            
+            // التحقق من رقم الهوية الوطنية
+            if (nationalId.length !== 10 || !/^\d+$/.test(nationalId)) {
+                showAlert('رقم الهوية الوطنية يجب أن يكون 10 أرقام', 'error');
+                return false;
+            }
+            
+            // التحقق من رقم الجوال
+            if (!/^05\d{8}$/.test(phone)) {
+                showAlert('رقم الجوال يجب أن يبدأ بـ 05 ويتكون من 10 أرقام', 'error');
+                return false;
+            }
+            
+            // التحقق من البريد الإلكتروني (إذا تم إدخاله)
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showAlert('البريد الإلكتروني غير صحيح', 'error');
+                return false;
+            }
+            
+            return true;
+        }
+
+        function isNationalIdExists(nationalId) {
+            return Object.values(membersData).some(member => 
+                member.nationalId === nationalId && 
+                (!currentMemberId || Object.keys(membersData).find(key => membersData[key] === member) !== currentMemberId)
+            );
+        }
+
+        function deleteMember(memberId) {
+            if (confirm('هل أنت متأكد من حذف هذا العضو؟')) {
+                const row = document.querySelector(`tr[data-member-id="${memberId}"]`);
+                if (row) {
+                    row.remove();
+                    delete membersData[memberId];
+                    showAlert('تم حذف العضو بنجاح', 'success');
+                }
+            }
+        }
+
+        function generateNewMemberId() {
+            const existingIds = Object.keys(membersData);
+            const maxId = Math.max(...existingIds.map(id => parseInt(id)));
+            return String(maxId + 1).padStart(3, '0');
+        }
+
+        function updateMemberInTable(memberId, memberData) {
+            const row = document.querySelector(`tr[data-member-id="${memberId}"]`);
+            if (row) {
+                const fullName = `${memberData.firstName} ${memberData.fatherName} ${memberData.grandfatherName} ${memberData.familyName}`;
+                row.cells[1].textContent = fullName;
+                row.cells[2].textContent = memberData.membershipType;
+                
+                // تحديث حالة العضو
+                const statusCell = row.cells[3];
+                statusCell.innerHTML = `<span class="status-badge status-${getStatusClass(memberData.status)}">${memberData.status}</span>`;
+            }
+        }
+
+        function addMemberToTable(memberId, memberData) {
+            const tbody = document.querySelector('#membersTable tbody');
+            const fullName = `${memberData.firstName} ${memberData.fatherName} ${memberData.grandfatherName} ${memberData.familyName}`;
+            const joinDate = new Date().toISOString().split('T')[0].replace(/-/g, '/');
+            
+            const newRow = `
+                <tr data-member-id="${memberId}">
+                    <td>${memberId}</td>
+                    <td>${fullName}</td>
+                    <td>${memberData.membershipType}</td>
+                    <td><span class="status-badge status-${getStatusClass(memberData.status)}">${memberData.status}</span></td>
+                    <td>${joinDate}</td>
+                    <td>
+                        <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="editMember('${memberId}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="deleteMember('${memberId}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+            
+            tbody.insertAdjacentHTML('beforeend', newRow);
+        }
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 'نشط': return 'active';
+                case 'غير نشط': return 'inactive';
+                case 'في الانتظار': return 'pending';
+                case 'معلق': return 'pending';
+                default: return 'inactive';
+            }
         }
 
         function showTransferDetails() {
@@ -2500,49 +2867,98 @@
 
         // Add some interactivity
         document.addEventListener('DOMContentLoaded', function() {
-            // Add click handlers for table actions
-            const actionButtons = document.querySelectorAll('.btn-danger');
-            actionButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    if (confirm('هل أنت متأكد من حذف هذا العنصر؟')) {
-                        this.closest('tr').remove();
-                        showAlert('تم حذف العنصر بنجاح', 'success');
+            // إضافة مستمعي الأحداث للنموذج
+            setupFormValidation();
+            
+            // إضافة مستمعي الأحداث للبحث في جدول الأعضاء
+            setupMemberSearch();
+            
+            // إضافة مستمعي الأحداث للأزرار العامة
+            setupGeneralButtons();
+        });
+
+        function setupFormValidation() {
+            // التحقق من رقم الهوية الوطنية أثناء الكتابة
+            const nationalIdInput = document.getElementById('nationalId');
+            if (nationalIdInput) {
+                nationalIdInput.addEventListener('input', function() {
+                    this.value = this.value.replace(/\D/g, '').slice(0, 10);
+                });
+            }
+            
+            // التحقق من رقم الجوال أثناء الكتابة
+            const phoneInput = document.getElementById('phone');
+            if (phoneInput) {
+                phoneInput.addEventListener('input', function() {
+                    this.value = this.value.replace(/\D/g, '').slice(0, 10);
+                    if (this.value.length > 0 && !this.value.startsWith('05')) {
+                        this.value = '05' + this.value.slice(2);
                     }
                 });
-            });
+            }
+        }
 
-            // Add form submission handlers
-            const forms = document.querySelectorAll('.form-input, .form-select');
-            forms.forEach(input => {
-                input.addEventListener('change', function() {
-                    console.log('تم تحديث الحقل:', this.value);
+        function setupMemberSearch() {
+            // إضافة حقل البحث لجدول الأعضاء
+            const membersSection = document.getElementById('members');
+            if (membersSection) {
+                const searchContainer = document.createElement('div');
+                searchContainer.style.marginBottom = '20px';
+                searchContainer.innerHTML = `
+                    <div class="form-group" style="max-width: 300px;">
+                        <label class="form-label">البحث في الأعضاء</label>
+                        <input type="text" class="form-input" id="memberSearch" placeholder="ابحث بالاسم أو رقم العضوية...">
+                    </div>
+                `;
+                
+                const tableContainer = membersSection.querySelector('.table-container');
+                tableContainer.parentNode.insertBefore(searchContainer, tableContainer);
+                
+                // إضافة وظيفة البحث
+                const searchInput = document.getElementById('memberSearch');
+                searchInput.addEventListener('input', function() {
+                    filterMembersTable(this.value);
                 });
-            });
+            }
+        }
 
-            // Add save button handlers
+        function filterMembersTable(searchTerm) {
+            const tbody = document.querySelector('#membersTable tbody');
+            const rows = tbody.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                const memberId = row.cells[0].textContent;
+                const memberName = row.cells[1].textContent;
+                const membershipType = row.cells[2].textContent;
+                
+                const matches = memberId.includes(searchTerm) || 
+                               memberName.includes(searchTerm) || 
+                               membershipType.includes(searchTerm);
+                
+                row.style.display = matches ? '' : 'none';
+            });
+        }
+
+        function setupGeneralButtons() {
+            // إضافة مستمعي الأحداث للأزرار العامة
             const saveButtons = document.querySelectorAll('.btn-primary');
             saveButtons.forEach(button => {
                 if (button.textContent.includes('حفظ') || button.textContent.includes('إضافة') || button.textContent.includes('إرسال')) {
-                    button.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        showLoading(this);
-                        setTimeout(() => {
-                            hideLoading(this);
-                            showAlert('تم حفظ البيانات بنجاح', 'success');
-                        }, 1500);
-                    });
+                    if (!button.onclick) { // تجنب إضافة مستمعي الأحداث مرتين
+                        button.addEventListener('click', function(e) {
+                            if (!this.closest('form')) { // تجنب التداخل مع النماذج
+                                e.preventDefault();
+                                showLoading(this);
+                                setTimeout(() => {
+                                    hideLoading(this);
+                                    showAlert('تم حفظ البيانات بنجاح', 'success');
+                                }, 1500);
+                            }
+                        });
+                    }
                 }
             });
-
-            // Add search functionality
-            const searchInputs = document.querySelectorAll('input[placeholder*="بحث"], input[placeholder*="أدخل"]');
-            searchInputs.forEach(input => {
-                input.addEventListener('input', function() {
-                    // Add search logic here
-                    console.log('Searching for:', this.value);
-                });
-            });
-        });
+        }
 
         // Utility functions
         function showAlert(message, type = 'success') {
