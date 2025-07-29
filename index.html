@@ -1,0 +1,2674 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة الاشتراكات والتحويلات</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            background-color: #f5f7fa;
+            direction: rtl;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 3px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 70px;
+            right: 0;
+            width: 280px;
+            height: calc(100vh - 70px);
+            background-color: white;
+            border-left: 1px solid #e5e7eb;
+            overflow-y: auto;
+            z-index: 999;
+            box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .sidebar-nav {
+            padding: 15px 0;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-right: 3px solid transparent;
+            position: relative;
+        }
+
+        .sidebar-item:hover {
+            background-color: #f8fafc;
+            color: #1e3a8a;
+            transform: translateX(-5px);
+        }
+
+        .sidebar-item.active {
+            background-color: #eff6ff;
+            color: #1e3a8a;
+            border-right-color: #1e3a8a;
+            font-weight: 600;
+        }
+
+        .sidebar-item.active i {
+            color: #1e3a8a;
+        }
+
+        .sidebar-item::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background-color: #1e3a8a;
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-item.active::before {
+            transform: scaleY(1);
+        }
+
+        .sidebar-item i {
+            width: 16px;
+            text-align: center;
+        }
+
+        .sidebar-section {
+            margin: 20px 0;
+        }
+
+        .sidebar-section-title {
+            padding: 0 20px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-right: 280px;
+            margin-top: 70px;
+            padding: 30px;
+            background-color: #f5f7fa;
+            min-height: calc(100vh - 70px);
+            transition: margin-right 0.3s ease;
+        }
+
+        .content-section {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            overflow: hidden;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            padding: 20px 25px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e3a8a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-content {
+            padding: 25px;
+        }
+
+        /* Remove old navigation styles */
+        .nav-tabs {
+            display: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                width: 260px;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-right: 0;
+                margin-top: 70px;
+                padding: 20px;
+            }
+            
+            .header-actions {
+                gap: 5px;
+            }
+            
+            .header-btn {
+                padding: 6px 8px;
+                font-size: 11px;
+            }
+            
+            .user-info {
+                gap: 8px;
+            }
+            
+            .user-avatar {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+
+            .header-title {
+                font-size: 20px;
+            }
+
+            .header-subtitle {
+                font-size: 12px;
+            }
+        }
+
+        /* Sidebar Toggle Button */
+        .sidebar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        .sidebar-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-toggle {
+                display: block;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Forms */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-input, .form-select {
+            padding: 12px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #1e3a8a;
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: #1e3a8a;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #1e40af;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+
+        .btn-success {
+            background-color: #059669;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #047857;
+        }
+
+        .btn-danger {
+            background-color: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #b91c1c;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+        }
+
+        .table th {
+            background-color: #f8fafc;
+            padding: 15px 12px;
+            text-align: right;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+            font-size: 14px;
+        }
+
+        .table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .table tr:hover {
+            background-color: #f9fafb;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-inactive {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #1e3a8a;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        /* Hidden sections */
+        .section-hidden {
+            display: none;
+        }
+
+        .section-visible {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .nav-list {
+                flex-wrap: wrap;
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+
+            .nav-item {
+                flex: 1;
+                min-width: 120px;
+                text-align: center;
+                white-space: nowrap;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-container {
+                font-size: 12px;
+            }
+
+            .table th, .table td {
+                padding: 8px 6px;
+            }
+
+            .btn {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-title {
+                font-size: 20px;
+            }
+
+            .header-subtitle {
+                font-size: 14px;
+            }
+
+            .nav-item {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+
+            .section-title {
+                font-size: 18px;
+            }
+
+            .stat-number {
+                font-size: 24px;
+            }
+        }
+
+        /* Enhanced animations */
+        .content-section {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Enhanced hover effects */
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .table tr:hover {
+            background-color: #f0f4ff;
+            transition: background-color 0.2s ease;
+        }
+
+        /* Loading states */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* Success/Error messages */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            animation: slideIn 0.3s ease-in-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .alert-warning {
+            background-color: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+
+        /* Print styles */
+        @media print {
+            .nav-tabs, .btn, .user-info {
+                display: none !important;
+            }
+            
+            .content-section {
+                box-shadow: none !important;
+                border: 1px solid #ccc !important;
+            }
+        }
+
+        /* Accessibility improvements */
+        .btn:focus, .form-input:focus, .form-select:focus {
+            outline: 2px solid #1e3a8a;
+            outline-offset: 2px;
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1a1a1a;
+                color: #ffffff;
+            }
+            
+            .content-section {
+                background-color: #2d2d2d;
+                color: #ffffff;
+            }
+            
+            .table {
+                background-color: #2d2d2d;
+                color: #ffffff;
+            }
+            
+            .table th {
+                background-color: #3d3d3d;
+                color: #ffffff;
+            }
+            
+            .form-input, .form-select {
+                background-color: #3d3d3d;
+                color: #ffffff;
+                border-color: #555;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <div class="header-title">نظام إدارة الاشتراكات والتحويلات</div>
+                <div class="header-subtitle">إدارة شاملة للأعضاء والأنشطة والاشتراكات</div>
+            </div>
+            <div class="header-actions">
+                <button class="sidebar-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="header-btn" onclick="showSection('notifications')">
+                    <i class="fas fa-bell"></i>
+                </button>
+                <button class="header-btn" onclick="showSection('messages')">
+                    <i class="fas fa-envelope"></i>
+                </button>
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 14px;">مدير النظام</div>
+                        <div style="font-size: 11px; opacity: 0.8;">متصل الآن</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">القائمة الرئيسية</div>
+            <div class="sidebar-subtitle">اختر القسم المطلوب</div>
+        </div>
+        
+        <div class="sidebar-nav">
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">الرئيسية</div>
+                <a href="#" class="sidebar-item active" onclick="showSection('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i>
+                    لوحة التحكم
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">إدارة البيانات</div>
+                <a href="#" class="sidebar-item" onclick="showSection('members')">
+                    <i class="fas fa-users"></i>
+                    إدارة الأعضاء
+                </a>
+                <a href="#" class="sidebar-item" onclick="showSection('subscriptions')">
+                    <i class="fas fa-credit-card"></i>
+                    الاشتراكات
+                </a>
+                <a href="#" class="sidebar-item" onclick="showSection('activities')">
+                    <i class="fas fa-swimming-pool"></i>
+                    الأنشطة
+                </a>
+                <a href="#" class="sidebar-item" onclick="showSection('transfers')">
+                    <i class="fas fa-exchange-alt"></i>
+                    التحويلات
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">التقارير والمالية</div>
+                <a href="#" class="sidebar-item" onclick="showSection('reports')">
+                    <i class="fas fa-chart-bar"></i>
+                    التقارير
+                </a>
+                <a href="#" class="sidebar-item" onclick="showSection('financial')">
+                    <i class="fas fa-money-bill-wave"></i>
+                    البيانات المالية
+                </a>
+                <a href="#" class="sidebar-item" onclick="showSection('advanced-reports')">
+                    <i class="fas fa-chart-line"></i>
+                    تقارير متقدمة
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">الطلبات والأرشيف</div>
+                <a href="#" class="sidebar-item" onclick="showSection('requests')">
+                    <i class="fas fa-clipboard-list"></i>
+                    طلبات الإضافة
+                </a>
+                <a href="#" class="sidebar-item" onclick="showSection('updates')">
+                    <i class="fas fa-edit"></i>
+                    تحديث البيانات
+                </a>
+                <a href="#" class="sidebar-item" onclick="showSection('archive')">
+                    <i class="fas fa-archive"></i>
+                    أرشيف العضويات
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">النظام</div>
+                <a href="#" class="sidebar-item" onclick="showSection('users')">
+                    <i class="fas fa-user-shield"></i>
+                    إدارة المستخدمين
+                </a>
+                <a href="#" class="sidebar-item" onclick="showSection('settings')">
+                    <i class="fas fa-cog"></i>
+                    الإعدادات
+                </a>
+                <a href="#" class="sidebar-item" onclick="showSection('help')">
+                    <i class="fas fa-question-circle"></i>
+                    المساعدة والدعم
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="content-section section-visible">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-tachometer-alt"></i>
+                    لوحة التحكم
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="stats-grid">
+                    <div class="stat-card" onclick="showSection('members')" style="cursor: pointer;">
+                        <div class="stat-number">1,247</div>
+                        <div class="stat-label">إجمالي الأعضاء</div>
+                        <div style="font-size: 12px; color: #059669; margin-top: 5px;">
+                            <i class="fas fa-arrow-up"></i> +12 هذا الشهر
+                        </div>
+                    </div>
+                    <div class="stat-card" onclick="showSection('subscriptions')" style="cursor: pointer;">
+                        <div class="stat-number">892</div>
+                        <div class="stat-label">الاشتراكات النشطة</div>
+                        <div style="font-size: 12px; color: #059669; margin-top: 5px;">
+                            <i class="fas fa-arrow-up"></i> +8 هذا الشهر
+                        </div>
+                    </div>
+                    <div class="stat-card" onclick="showSection('activities')" style="cursor: pointer;">
+                        <div class="stat-number">15</div>
+                        <div class="stat-label">الأنشطة المتاحة</div>
+                        <div style="font-size: 12px; color: #6b7280; margin-top: 5px;">
+                            <i class="fas fa-minus"></i> بدون تغيير
+                        </div>
+                    </div>
+                    <div class="stat-card" onclick="showSection('financial')" style="cursor: pointer;">
+                        <div class="stat-number">45,680</div>
+                        <div class="stat-label">إجمالي الإيرادات (ج.م)</div>
+                        <div style="font-size: 12px; color: #059669; margin-top: 5px;">
+                            <i class="fas fa-arrow-up"></i> +5,240 هذا الشهر
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fas fa-info-circle"></i>
+                            نظام البيانات الأساسية
+                        </div>
+                    </div>
+                    <div class="section-content">
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="margin-bottom: 15px; padding-right: 25px; position: relative;">
+                                <span style="position: absolute; right: 0; top: 0; font-size: 20px; color: #000;">•</span>
+                                تشمل جميع البيانات الخاصة بالعضو العامل والتوابع الموجودين بالعضوية
+                            </li>
+                            <li style="margin-bottom: 15px; padding-right: 25px; position: relative;">
+                                <span style="position: absolute; right: 0; top: 0; font-size: 20px; color: #000;">•</span>
+                                تصنيف الأعضاء إلى عدة فئات (العاملة، القضاة، العسكرية، أجانب)
+                            </li>
+                            <li style="margin-bottom: 15px; padding-right: 25px; position: relative;">
+                                <span style="position: absolute; right: 0; top: 0; font-size: 20px; color: #000;">•</span>
+                                تصنيف الأبناء حسب المراحل العمرية (تحت سن 16، فوق سن 16، تحت سن 21)
+                            </li>
+                            <li style="margin-bottom: 15px; padding-right: 25px; position: relative;">
+                                <span style="position: absolute; right: 0; top: 0; font-size: 20px; color: #000;">•</span>
+                                نظام اشتراك الدواليب على العضويات
+                            </li>
+                            <li style="margin-bottom: 15px; padding-right: 25px; position: relative;">
+                                <span style="position: absolute; right: 0; top: 0; font-size: 20px; color: #000;">•</span>
+                                نظام اشتراك الأعضاء في الأنشطة المختلفة (السباحة، الجيم، التنس)
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Members Section -->
+        <div id="members" class="content-section section-hidden">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-users"></i>
+                    إدارة الأعضاء
+                </div>
+            </div>
+            <div class="section-content">
+                <button class="btn btn-primary" onclick="showAddMemberForm()">
+                    <i class="fas fa-plus"></i>
+                    إضافة عضو جديد
+                </button>
+
+                <div class="table-container" style="margin-top: 25px;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>رقم العضوية</th>
+                                <th>اسم العضو</th>
+                                <th>نوع العضوية</th>
+                                <th>الحالة</th>
+                                <th>تاريخ الانضمام</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>001</td>
+                                <td>أحمد محمد علي</td>
+                                <td>عضو عامل</td>
+                                <td><span class="status-badge status-active">نشط</span></td>
+                                <td>2024/01/15</td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>002</td>
+                                <td>فاطمة أحمد حسن</td>
+                                <td>عضو تابع</td>
+                                <td><span class="status-badge status-active">نشط</span></td>
+                                <td>2024/02/20</td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>003</td>
+                                <td>محمد سعيد عبدالله</td>
+                                <td>عضو قاضي</td>
+                                <td><span class="status-badge status-pending">في الانتظار</span></td>
+                                <td>2024/03/10</td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subscriptions Section -->
+        <div id="subscriptions" class="content-section section-hidden">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-credit-card"></i>
+                    إدارة الاشتراكات
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">نوع الاشتراك</label>
+                        <select class="form-select">
+                            <option>اشتراك شهري</option>
+                            <option>اشتراك ربع سنوي</option>
+                            <option>اشتراك سنوي</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">نوع العضو</label>
+                        <select class="form-select">
+                            <option>عضو عامل</option>
+                            <option>عضو تابع</option>
+                            <option>عضو قاضي</option>
+                            <option>عضو عسكري</option>
+                            <option>أجنبي</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">المرحلة العمرية</label>
+                        <select class="form-select">
+                            <option>تحت سن 16</option>
+                            <option>فوق سن 16</option>
+                            <option>تحت سن 21</option>
+                            <option>فوق سن 21</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">المبلغ (ج.م)</label>
+                        <input type="number" class="form-input" placeholder="أدخل المبلغ">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    حفظ الاشتراك
+                </button>
+
+                <div class="table-container" style="margin-top: 25px;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>رقم الاشتراك</th>
+                                <th>نوع الاشتراك</th>
+                                <th>نوع العضو</th>
+                                <th>المبلغ</th>
+                                <th>الحالة</th>
+                                <th>تاريخ الانتهاء</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>SUB001</td>
+                                <td>اشتراك شهري</td>
+                                <td>عضو عامل</td>
+                                <td>500 ج.م</td>
+                                <td><span class="status-badge status-active">نشط</span></td>
+                                <td>2024/04/15</td>
+                            </tr>
+                            <tr>
+                                <td>SUB002</td>
+                                <td>اشتراك سنوي</td>
+                                <td>عضو تابع</td>
+                                <td>300 ج.م</td>
+                                <td><span class="status-badge status-active">نشط</span></td>
+                                <td>2025/02/20</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activities Section -->
+        <div id="activities" class="content-section section-hidden">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-swimming-pool"></i>
+                    إدارة الأنشطة
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">اسم النشاط</label>
+                        <input type="text" class="form-input" placeholder="مثال: السباحة">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الوصف</label>
+                        <textarea class="form-input form-textarea" placeholder="وصف النشاط"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">السعر الشهري</label>
+                        <input type="number" class="form-input" placeholder="أدخل السعر">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الحالة</label>
+                        <select class="form-select">
+                            <option>متاح</option>
+                            <option>غير متاح</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    إضافة نشاط جديد
+                </button>
+
+                <div class="table-container" style="margin-top: 25px;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>اسم النشاط</th>
+                                <th>الوصف</th>
+                                <th>السعر الشهري</th>
+                                <th>عدد المشتركين</th>
+                                <th>الحالة</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>السباحة</td>
+                                <td>دروس سباحة للمبتدئين والمتقدمين</td>
+                                <td>200 ج.م</td>
+                                <td>45</td>
+                                <td><span class="status-badge status-active">متاح</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>الجيم</td>
+                                <td>تمارين رياضية وبناء العضلات</td>
+                                <td>300 ج.م</td>
+                                <td>78</td>
+                                <td><span class="status-badge status-active">متاح</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>التنس</td>
+                                <td>دروس تنس طاولة وكرة تنس</td>
+                                <td>250 ج.م</td>
+                                <td>32</td>
+                                <td><span class="status-badge status-inactive">غير متاح</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports Section -->
+        <div id="reports" class="content-section section-hidden">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-chart-bar"></i>
+                    التقارير والإحصائيات
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">75%</div>
+                        <div class="stat-label">نسبة الاشتراكات النشطة</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">12,450</div>
+                        <div class="stat-label">إجمالي الجلسات هذا الشهر</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">89%</div>
+                        <div class="stat-label">معدل رضا الأعضاء</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">156</div>
+                        <div class="stat-label">الأعضاء الجدد هذا الشهر</div>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fas fa-file-alt"></i>
+                            تقرير الأنشطة الأكثر شعبية
+                        </div>
+                    </div>
+                    <div class="section-content">
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>المرتبة</th>
+                                        <th>النشاط</th>
+                                        <th>عدد المشتركين</th>
+                                        <th>نسبة المشاركة</th>
+                                        <th>الإيرادات الشهرية</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>الجيم</td>
+                                        <td>78</td>
+                                        <td>32%</td>
+                                        <td>23,400 ج.م</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>السباحة</td>
+                                        <td>45</td>
+                                        <td>18%</td>
+                                        <td>9,000 ج.م</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td>التنس</td>
+                                        <td>32</td>
+                                        <td>13%</td>
+                                        <td>8,000 ج.م</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Requests Section -->
+        <div id="requests" class="content-section section-hidden">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-clipboard-list"></i>
+                    طلبات الإضافة واسترجاع العضوية
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">نوع الطلب</label>
+                        <select class="form-select">
+                            <option>إضافة اشتراك احتياجات خاصة</option>
+                            <option>استرجاع العضوية</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">رقم العضوية</label>
+                        <input type="text" class="form-input" placeholder="أدخل رقم العضوية">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">سبب الطلب</label>
+                        <textarea class="form-input form-textarea" placeholder="تفاصيل الطلب"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">المستندات المرفقة</label>
+                        <input type="file" class="form-input" multiple>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i>
+                    إرسال الطلب
+                </button>
+
+                <div class="table-container" style="margin-top: 25px;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>رقم الطلب</th>
+                                <th>نوع الطلب</th>
+                                <th>رقم العضوية</th>
+                                <th>تاريخ الطلب</th>
+                                <th>الحالة</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>REQ001</td>
+                                <td>إضافة اشتراك احتياجات خاصة</td>
+                                <td>001</td>
+                                <td>2024/03/15</td>
+                                <td><span class="status-badge status-pending">في الانتظار</span></td>
+                                <td>
+                                    <button class="btn btn-success" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>REQ002</td>
+                                <td>استرجاع العضوية</td>
+                                <td>005</td>
+                                <td>2024/03/10</td>
+                                <td><span class="status-badge status-active">تمت الموافقة</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Data Section -->
+        <div id="financial" class="content-section section-hidden">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-money-bill-wave"></i>
+                    نظام البيانات المالية
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">125,680</div>
+                        <div class="stat-label">إجمالي الإيرادات (ج.م)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">15,420</div>
+                        <div class="stat-label">المستحقات المعلقة</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">8,950</div>
+                        <div class="stat-label">الغرامات والتأخيرات</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">45</div>
+                        <div class="stat-label">عدد الأقساط النشطة</div>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">نوع العملية</label>
+                        <select class="form-select">
+                            <option>إضافة رسوم</option>
+                            <option>تسجيل قسط</option>
+                            <option>تسجيل غرامة</option>
+                            <option>تحديث شريحة مالية</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">رقم العضوية</label>
+                        <input type="text" class="form-input" placeholder="أدخل رقم العضوية">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">المبلغ</label>
+                        <input type="number" class="form-input" placeholder="أدخل المبلغ">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">العملة</label>
+                        <select class="form-select">
+                            <option>جنيه مصري</option>
+                            <option>دولار أمريكي</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    حفظ العملية المالية
+                </button>
+
+                <div class="table-container" style="margin-top: 25px;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>رقم العملية</th>
+                                <th>رقم العضوية</th>
+                                <th>نوع العملية</th>
+                                <th>المبلغ</th>
+                                <th>العملة</th>
+                                <th>تاريخ الاستحقاق</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>FIN001</td>
+                                <td>001</td>
+                                <td>رسوم عضوية</td>
+                                <td>500</td>
+                                <td>ج.م</td>
+                                <td>2024/04/01</td>
+                                <td><span class="status-badge status-active">مدفوع</span></td>
+                            </tr>
+                            <tr>
+                                <td>FIN002</td>
+                                <td>002</td>
+                                <td>قسط شهري</td>
+                                <td>200</td>
+                                <td>ج.م</td>
+                                <td>2024/04/15</td>
+                                <td><span class="status-badge status-pending">معلق</span></td>
+                            </tr>
+                            <tr>
+                                <td>FIN003</td>
+                                <td>003</td>
+                                <td>غرامة تأخير</td>
+                                <td>50</td>
+                                <td>ج.م</td>
+                                <td>2024/03/30</td>
+                                <td><span class="status-badge status-inactive">غير مدفوع</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Updates Section -->
+        <div id="updates" class="content-section section-hidden">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-edit"></i>
+                    نظام تحديث البيانات الأساسية أو المالية
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">نوع التحديث</label>
+                        <select class="form-select">
+                            <option>إضافة عضو</option>
+                            <option>حذف عضو</option>
+                            <option>تعديل بيانات عضو</option>
+                            <option>إضافة مالية</option>
+                            <option>خصم مالي</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">رقم العضوية</label>
+                        <input type="text" class="form-input" placeholder="أدخل رقم العضوية">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">سبب التحديث</label>
+                        <textarea class="form-input form-textarea" placeholder="سبب التحديث"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">مستند التحديث</label>
+                        <input type="file" class="form-input">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    حفظ التحديث
+                </button>
+
+                <div class="table-container" style="margin-top: 25px;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>رقم التحديث</th>
+                                <th>نوع التحديث</th>
+                                <th>رقم العضوية</th>
+                                <th>التاريخ</th>
+                                <th>السبب</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>UPD001</td>
+                                <td>إضافة عضو</td>
+                                <td>001</td>
+                                <td>2024/03/15</td>
+                                <td>إضافة زوجة</td>
+                                <td><span class="status-badge status-active">مكتمل</span></td>
+                            </tr>
+                            <tr>
+                                <td>UPD002</td>
+                                <td>تعديل بيانات</td>
+                                <td>002</td>
+                                <td>2024/03/10</td>
+                                <td>تحديث العنوان</td>
+                                <td><span class="status-badge status-active">مكتمل</span></td>
+                            </tr>
+                            <tr>
+                                <td>UPD003</td>
+                                <td>إضافة مالية</td>
+                                <td>003</td>
+                                <td>2024/03/05</td>
+                                <td>إضافة رسوم نشاط</td>
+                                <td><span class="status-badge status-pending">قيد المعالجة</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Archive Section -->
+        <div id="archive" class="content-section section-hidden">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-archive"></i>
+                    نظام أرشيف العضويات
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">نوع البحث</label>
+                        <select class="form-select">
+                            <option>مستندات العضوية</option>
+                            <option>استمارة العضوية</option>
+                            <option>دفتر العضوية</option>
+                            <option>كارت العضوية</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">رقم العضوية</label>
+                        <input type="text" class="form-input" placeholder="أدخل رقم العضوية">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">تاريخ من</label>
+                        <input type="date" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">تاريخ إلى</label>
+                        <input type="date" class="form-input">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary">
+                    <i class="fas fa-search"></i>
+                    بحث في الأرشيف
+                </button>
+
+                <div class="table-container" style="margin-top: 25px;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>رقم المستند</th>
+                                <th>نوع المستند</th>
+                                <th>رقم العضوية</th>
+                                <th>تاريخ الإصدار</th>
+                                <th>الحالة</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>DOC001</td>
+                                <td>استمارة العضوية</td>
+                                <td>001</td>
+                                <td>2024/01/15</td>
+                                <td><span class="status-badge status-active">صالح</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>DOC002</td>
+                                <td>كارت العضوية</td>
+                                <td>002</td>
+                                <td>2024/02/20</td>
+                                <td><span class="status-badge status-active">صالح</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>DOC003</td>
+                                <td>دفتر العضوية</td>
+                                <td>003</td>
+                                <td>2024/03/10</td>
+                                <td><span class="status-badge status-inactive">منتهي الصلاحية</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transfers Section -->
+        <div id="transfers" class="content-section section-hidden">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-exchange-alt"></i>
+                    نظام التحويلات وفصل العضوية
+                </div>
+            </div>
+            <div class="section-content">
+                <!-- إجراءات عامة إلزامية -->
+                <div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; margin-bottom: 25px; border-right: 4px solid #ffc107;">
+                    <h4 style="color: #856404; margin-bottom: 15px;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        إجراءات عامة إلزامية:
+                    </h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 10px; padding-right: 20px; position: relative;">
+                            <span style="position: absolute; right: 0; top: 0; color: #dc3545; font-weight: bold;">•</span>
+                            بلوغ سن 25 عام وهو اجراء الزامي
+                        </li>
+                        <li style="margin-bottom: 10px; padding-right: 20px; position: relative;">
+                            <span style="position: absolute; right: 0; top: 0; color: #dc3545; font-weight: bold;">•</span>
+                            تخرج الابن من الجامعه وهو اجراء الزامي
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- شاشة التحويل -->
+                <div style="background-color: #e7f3ff; padding: 20px; border-radius: 8px; margin-bottom: 25px; border-right: 4px solid #007bff;">
+                    <h4 style="color: #004085; margin-bottom: 15px;">
+                        <i class="fas fa-desktop"></i>
+                        شاشة التحويل:
+                    </h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">رقم العضويه الحاليه</label>
+                            <input type="text" class="form-input" placeholder="أدخل رقم العضوية الحالي">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">اسم العضو المراد تحويله</label>
+                            <input type="text" class="form-input" placeholder="اسم العضو">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">تاريخ ميلاده</label>
+                            <input type="date" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">تاريخ قبول عضويته بالنادي</label>
+                            <input type="date" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">تاريخ اجراء التحويل</label>
+                            <input type="date" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">خانة ادخال تاريخ التخرج</label>
+                            <input type="date" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">نوع العضويه</label>
+                            <select class="form-select">
+                                <option>عضو عامل</option>
+                                <option>عضو تابع</option>
+                                <option>عضو قاضي</option>
+                                <option>عضو عسكري</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">رقم العضويه الجديدة</label>
+                            <input type="text" class="form-input" placeholder="سيتم إنشاؤه تلقائياً">
+                        </div>
+                    </div>
+                    <p style="color: #004085; font-style: italic; margin-top: 15px;">
+                        <i class="fas fa-info-circle"></i>
+                        ويتم استخراج الحساب المالي طبقا للشروط المذكورة بالائحة الاساسيه
+                    </p>
+                </div>
+
+                <!-- أنواع التحويلات -->
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">نوع التحويل</label>
+                        <select class="form-select" id="transferType" onchange="showTransferDetails()">
+                            <option value="">اختر نوع التحويل</option>
+                            <option value="daughter">فصل العضوية لتحويل كريمة العضو</option>
+                            <option value="divorce">فصل العضوية للطلاق</option>
+                            <option value="death">فصل العضوية للوفاة</option>
+                            <option value="son">فصل العضوية للتحويل للأبناء الذكور</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- تفاصيل تحويل كريمة العضو -->
+                <div id="daughterTransfer" style="display: none; background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h4 style="color: #1e3a8a; margin-bottom: 15px;">
+                        <i class="fas fa-female"></i>
+                        إجراء فصل العضوية لتحويل كريمة العضو:
+                    </h4>
+                    <p style="color: #6b7280; margin-bottom: 15px;">
+                        نظام التحويل لكريمة العضو بناء علي ثلاثة شروط (مرتبط بلائحة النظام الاساسي للنادي):
+                    </p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 10px; padding-right: 20px; position: relative;">
+                            <span style="position: absolute; right: 0; top: 0; color: #059669;">✓</span>
+                            بلوغ سن 21 عام (نظام اختياري)
+                        </li>
+                        <li style="margin-bottom: 10px; padding-right: 20px; position: relative;">
+                            <span style="position: absolute; right: 0; top: 0; color: #dc3545; font-weight: bold;">•</span>
+                            بلوغ سن 25 عام وهو اجراء الزامي
+                        </li>
+                        <li style="margin-bottom: 10px; padding-right: 20px; position: relative;">
+                            <span style="position: absolute; right: 0; top: 0; color: #dc3545; font-weight: bold;">•</span>
+                            التحاق كريمة العضو بالعمل وهو اجراء الزامي
+                        </li>
+                        <li style="margin-bottom: 10px; padding-right: 20px; position: relative;">
+                            <span style="position: absolute; right: 0; top: 0; color: #dc3545; font-weight: bold;">•</span>
+                            زواج كريمة العضو وهو اجراء الزامي
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- تفاصيل فصل العضوية للطلاق -->
+                <div id="divorceTransfer" style="display: none; background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h4 style="color: #1e3a8a; margin-bottom: 15px;">
+                        <i class="fas fa-heart-broken"></i>
+                        إجراء فصل العضوية للطلاق:
+                    </h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 10px; padding-right: 20px; position: relative;">
+                            <span style="position: absolute; right: 0; top: 0; color: #059669;">✓</span>
+                            تستمر العضويه الاساسيه باسم مصدر العضويه بالنادي
+                        </li>
+                        <li style="margin-bottom: 10px; padding-right: 20px; position: relative;">
+                            <span style="position: absolute; right: 0; top: 0; color: #059669;">✓</span>
+                            حصول المطلق علي مسلسل عضويه جديدة في حالة توافر شروط اكتساب العضويه المحددة بالائحة
+                        </li>
+                        <li style="margin-bottom: 10px; padding-right: 20px; position: relative;">
+                            <span style="position: absolute; right: 0; top: 0; color: #059669;">✓</span>
+                            التفرقه في المعامله الماليه للعضو مكتسب العضويه والعضو اساس العضويه (اللائحة الماليه)
+                        </li>
+                        <li style="margin-bottom: 10px; padding-right: 20px; position: relative;">
+                            <span style="position: absolute; right: 0; top: 0; color: #059669;">✓</span>
+                            امكانيه استمرار عضوية الابناء بنفس رقم العضويه او النقل مع العضوية المكتسبه
+                        </li>
+                        <li style="margin-bottom: 10px; padding-right: 20px; position: relative;">
+                            <span style="position: absolute; right: 0; top: 0; color: #059669;">✓</span>
+                            امكانية استمرار عضوية الاقارب بنفس رقم العضويه او النقل مع العضويه المكتسبه
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- تفاصيل فصل العضوية للوفاة -->
+                <div id="deathTransfer" style="display: none; background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h4 style="color: #1e3a8a; margin-bottom: 15px;">
+                        <i class="fas fa-cross"></i>
+                        إجراء فصل العضوية للوفاة:
+                    </h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 10px; padding-right: 20px; position: relative;">
+                            <span style="position: absolute; right: 0; top: 0; color: #059669;">✓</span>
+                            تحويل بيانات العضوية من اسم الزوج الي اسم الزوجه في حالة وفاة العضو الاساسي او العكس
+                        </li>
+                        <li style="margin-bottom: 10px; padding-right: 20px; position: relative;">
+                            <span style="position: absolute; right: 0; top: 0; color: #059669;">✓</span>
+                            الاحتفاظ بنفس رقم العضويه دون اي تعديل في المعامله الماليه
+                        </li>
+                        <li style="margin-bottom: 10px; padding-right: 20px; position: relative;">
+                            <span style="position: absolute; right: 0; top: 0; color: #059669;">✓</span>
+                            امكانيه اكتساب مسلسل عضويه جديد للزوجات الاخري المنضمين بالعضويه
+                        </li>
+                        <li style="margin-bottom: 10px; padding-right: 20px; position: relative;">
+                            <span style="position: absolute; right: 0; top: 0; color: #059669;">✓</span>
+                            امكانيه اكتساب مسلسل عضويه جديدة وحذف العضويه القائمه للزوج قبل الوفاه
+                        </li>
+                    </ul>
+                </div>
+
+                <button class="btn btn-primary">
+                    <i class="fas fa-exchange-alt"></i>
+                    إجراء التحويل
+                </button>
+
+                <div class="table-container" style="margin-top: 25px;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>رقم التحويل</th>
+                                <th>نوع التحويل</th>
+                                <th>العضو الأصلي</th>
+                                <th>المحول إليه</th>
+                                <th>تاريخ التحويل</th>
+                                <th>الحالة</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>TRF001</td>
+                                <td>فصل العضوية للأبناء</td>
+                                <td>أحمد محمد علي</td>
+                                <td>محمد أحمد علي</td>
+                                <td>2024/02/15</td>
+                                <td><span class="status-badge status-active">مكتمل</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>TRF002</td>
+                                <td>تحويل كريمة العضو</td>
+                                <td>فاطمة أحمد حسن</td>
+                                <td>سارة فاطمة أحمد</td>
+                                <td>2024/03/01</td>
+                                <td><span class="status-badge status-pending">قيد المعالجة</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>TRF003</td>
+                                <td>فصل العضوية للطلاق</td>
+                                <td>محمد سعيد عبدالله</td>
+                                <td>أميرة محمد سعيد</td>
+                                <td>2024/01/20</td>
+                                <td><span class="status-badge status-active">مكتمل</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Section -->
+        <div id="notifications" class="content-section section-hidden">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-bell"></i>
+                    نظام الإشعارات والتنبيهات
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">15</div>
+                        <div class="stat-label">إشعارات جديدة</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">8</div>
+                        <div class="stat-label">تنبيهات مهمة</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">3</div>
+                        <div class="stat-label">طلبات عاجلة</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">25</div>
+                        <div class="stat-label">إشعارات مقروءة</div>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">نوع الإشعار</label>
+                        <select class="form-select">
+                            <option>جميع الإشعارات</option>
+                            <option>تنبيهات انتهاء الاشتراكات</option>
+                            <option>طلبات التحويل</option>
+                            <option>المدفوعات المتأخرة</option>
+                            <option>الأحداث القادمة</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">حالة الإشعار</label>
+                        <select class="form-select">
+                            <option>جميع الحالات</option>
+                            <option>غير مقروء</option>
+                            <option>مقروء</option>
+                            <option>مهم</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">من تاريخ</label>
+                        <input type="date" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">إلى تاريخ</label>
+                        <input type="date" class="form-input">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary">
+                    <i class="fas fa-search"></i>
+                    تصفية الإشعارات
+                </button>
+
+                <div class="table-container" style="margin-top: 25px;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>نوع الإشعار</th>
+                                <th>الرسالة</th>
+                                <th>التاريخ</th>
+                                <th>الأولوية</th>
+                                <th>الحالة</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background-color: #fff3cd;">
+                                <td><i class="fas fa-exclamation-triangle" style="color: #ffc107;"></i> تنبيه عاجل</td>
+                                <td>انتهاء اشتراك العضو رقم 001 خلال 3 أيام</td>
+                                <td>2024/03/15</td>
+                                <td><span class="status-badge status-pending">عالية</span></td>
+                                <td><span class="status-badge status-pending">غير مقروء</span></td>
+                                <td>
+                                    <button class="btn btn-success" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-exchange-alt" style="color: #007bff;"></i> طلب تحويل</td>
+                                <td>طلب تحويل عضوية جديد من أحمد محمد علي</td>
+                                <td>2024/03/14</td>
+                                <td><span class="status-badge status-active">متوسطة</span></td>
+                                <td><span class="status-badge status-pending">غير مقروء</span></td>
+                                <td>
+                                    <button class="btn btn-success" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-money-bill-wave" style="color: #dc3545;"></i> مدفوعات</td>
+                                <td>تأخر في دفع الرسوم الشهرية للعضو رقم 003</td>
+                                <td>2024/03/13</td>
+                                <td><span class="status-badge status-pending">عالية</span></td>
+                                <td><span class="status-badge status-active">مقروء</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div id="settings" class="content-section section-hidden">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-cog"></i>
+                    إعدادات النظام
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">اسم النادي</label>
+                        <input type="text" class="form-input" value="نادي الرياضيين" placeholder="اسم النادي">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">العنوان</label>
+                        <input type="text" class="form-input" value="شارع الرياضة، القاهرة" placeholder="عنوان النادي">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">رقم الهاتف</label>
+                        <input type="tel" class="form-input" value="+20 123 456 789" placeholder="رقم الهاتف">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">البريد الإلكتروني</label>
+                        <input type="email" class="form-input" value="info@club.com" placeholder="البريد الإلكتروني">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">العملة الافتراضية</label>
+                        <select class="form-select">
+                            <option selected>جنيه مصري</option>
+                            <option>دولار أمريكي</option>
+                            <option>يورو</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">المنطقة الزمنية</label>
+                        <select class="form-select">
+                            <option selected>Africa/Cairo (GMT+2)</option>
+                            <option>UTC (GMT+0)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h4 style="color: #1e3a8a; margin-bottom: 15px;">
+                        <i class="fas fa-bell"></i>
+                        إعدادات الإشعارات:
+                    </h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" checked style="margin-left: 10px;">
+                                تنبيهات انتهاء الاشتراكات
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" checked style="margin-left: 10px;">
+                                تنبيهات المدفوعات المتأخرة
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" checked style="margin-left: 10px;">
+                                إشعارات طلبات التحويل
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" style="margin-left: 10px;">
+                                إشعارات البريد الإلكتروني
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    حفظ الإعدادات
+                </button>
+            </div>
+        </div>
+
+        <!-- Users Section -->
+        <div id="users" class="content-section section-hidden">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-user-shield"></i>
+                    إدارة المستخدمين
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">اسم المستخدم</label>
+                        <input type="text" class="form-input" placeholder="أدخل اسم المستخدم">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">البريد الإلكتروني</label>
+                        <input type="email" class="form-input" placeholder="أدخل البريد الإلكتروني">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">كلمة المرور</label>
+                        <input type="password" class="form-input" placeholder="أدخل كلمة المرور">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">تاريخ التسجيل</label>
+                        <input type="date" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الصلاحية</label>
+                        <select class="form-select">
+                            <option>مدير</option>
+                            <option>مشرف</option>
+                            <option>مستخدم</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    إضافة مستخدم جديد
+                </button>
+
+                <div class="table-container" style="margin-top: 25px;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>رقم المستخدم</th>
+                                <th>اسم المستخدم</th>
+                                <th>البريد الإلكتروني</th>
+                                <th>تاريخ التسجيل</th>
+                                <th>الصلاحية</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>001</td>
+                                <td>مدير النظام</td>
+                                <td>admin@club.com</td>
+                                <td>2024/01/01</td>
+                                <td>مدير</td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>002</td>
+                                <td>مشرف النظام</td>
+                                <td>moderator@club.com</td>
+                                <td>2024/01/02</td>
+                                <td>مشرف</td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>003</td>
+                                <td>مستخدم النظام</td>
+                                <td>user@club.com</td>
+                                <td>2024/01/03</td>
+                                <td>مستخدم</td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages Section -->
+        <div id="messages" class="content-section section-hidden">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-envelope"></i>
+                    الرسائل
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">المستلم</label>
+                        <input type="text" class="form-input" placeholder="أدخل اسم المستلم">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">المرسل</label>
+                        <input type="text" class="form-input" placeholder="أدخل اسم المرسل">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الرسالة</label>
+                        <textarea class="form-input form-textarea" placeholder="أدخل الرسالة"></textarea>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i>
+                    إرسال الرسالة
+                </button>
+
+                <div class="table-container" style="margin-top: 25px;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>رقم الرسالة</th>
+                                <th>المستلم</th>
+                                <th>المرسل</th>
+                                <th>تاريخ الإرسال</th>
+                                <th>الحالة</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>MSG001</td>
+                                <td>مدير النظام</td>
+                                <td>مشرف النظام</td>
+                                <td>2024/03/15</td>
+                                <td><span class="status-badge status-active">مقروء</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>MSG002</td>
+                                <td>مشرف النظام</td>
+                                <td>مستخدم النظام</td>
+                                <td>2024/03/16</td>
+                                <td><span class="status-badge status-pending">غير مقروء</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Reports Section -->
+        <div id="advanced-reports" class="content-section section-hidden">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    التقارير المتقدمة والتحليلات
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">نوع التقرير</label>
+                        <select class="form-select">
+                            <option>تقرير الإيرادات الشهرية</option>
+                            <option>تقرير نشاط الأعضاء</option>
+                            <option>تقرير الاشتراكات المنتهية</option>
+                            <option>تقرير التحويلات</option>
+                            <option>تقرير الأنشطة الأكثر شعبية</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الفترة الزمنية</label>
+                        <select class="form-select">
+                            <option>آخر 7 أيام</option>
+                            <option>آخر 30 يوم</option>
+                            <option>آخر 3 أشهر</option>
+                            <option>آخر 6 أشهر</option>
+                            <option>آخر سنة</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">من تاريخ</label>
+                        <input type="date" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">إلى تاريخ</label>
+                        <input type="date" class="form-input">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn btn-primary">
+                        <i class="fas fa-search"></i>
+                        إنشاء التقرير
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportTable('advanced-reports-table')">
+                        <i class="fas fa-download"></i>
+                        تصدير Excel
+                    </button>
+                    <button class="btn btn-success">
+                        <i class="fas fa-print"></i>
+                        طباعة التقرير
+                    </button>
+                </div>
+
+                <!-- Sample Chart Placeholder -->
+                <div style="background: linear-gradient(135deg, #f8fafc, #e2e8f0); padding: 40px; border-radius: 12px; text-align: center; margin: 20px 0;">
+                    <i class="fas fa-chart-bar" style="font-size: 48px; color: #1e3a8a; margin-bottom: 20px;"></i>
+                    <h3 style="color: #1e3a8a; margin-bottom: 10px;">رسم بياني تفاعلي</h3>
+                    <p style="color: #6b7280;">سيتم عرض الرسم البياني هنا عند إنشاء التقرير</p>
+                </div>
+
+                <div class="table-container">
+                    <table class="table" id="advanced-reports-table">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>نوع النشاط</th>
+                                <th>عدد المشاركين</th>
+                                <th>الإيرادات</th>
+                                <th>نسبة النمو</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>2024/03/15</td>
+                                <td>السباحة</td>
+                                <td>45</td>
+                                <td>9,000 ج.م</td>
+                                <td><span style="color: #059669;">+12%</span></td>
+                                <td><span class="status-badge status-active">ممتاز</span></td>
+                            </tr>
+                            <tr>
+                                <td>2024/03/14</td>
+                                <td>الجيم</td>
+                                <td>78</td>
+                                <td>23,400 ج.م</td>
+                                <td><span style="color: #059669;">+8%</span></td>
+                                <td><span class="status-badge status-active">جيد</span></td>
+                            </tr>
+                            <tr>
+                                <td>2024/03/13</td>
+                                <td>التنس</td>
+                                <td>32</td>
+                                <td>8,000 ج.م</td>
+                                <td><span style="color: #dc3545;">-3%</span></td>
+                                <td><span class="status-badge status-pending">تحتاج تحسين</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Section -->
+        <div id="help" class="content-section section-hidden">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-question-circle"></i>
+                    المساعدة والدعم الفني
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">دعم فني متواصل</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">5</div>
+                        <div class="stat-label">أدلة تعليمية</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">15</div>
+                        <div class="stat-label">فيديو تعليمي</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">99%</div>
+                        <div class="stat-label">معدل الرضا</div>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">نوع المشكلة</label>
+                        <select class="form-select">
+                            <option>مشكلة تقنية</option>
+                            <option>استفسار عن النظام</option>
+                            <option>طلب ميزة جديدة</option>
+                            <option>بلاغ عن خطأ</option>
+                            <option>أخرى</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الاسم</label>
+                        <input type="text" class="form-input" placeholder="أدخل اسمك">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">البريد الإلكتروني</label>
+                        <input type="email" class="form-input" placeholder="أدخل بريدك الإلكتروني">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">رقم الهاتف</label>
+                        <input type="tel" class="form-input" placeholder="أدخل رقم هاتفك">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label class="form-label">تفاصيل المشكلة</label>
+                    <textarea class="form-input form-textarea" placeholder="اشرح مشكلتك بالتفصيل"></textarea>
+                </div>
+
+                <button class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i>
+                    إرسال طلب الدعم
+                </button>
+
+                <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h4 style="color: #1e3a8a; margin-bottom: 15px;">
+                        <i class="fas fa-info-circle"></i>
+                        معلومات التواصل:
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                        <div>
+                            <strong>البريد الإلكتروني:</strong><br>
+                            support@club.com
+                        </div>
+                        <div>
+                            <strong>رقم الهاتف:</strong><br>
+                            +20 123 456 789
+                        </div>
+                        <div>
+                            <strong>ساعات العمل:</strong><br>
+                            من الأحد إلى الخميس: 8 ص - 6 م
+                        </div>
+                        <div>
+                            <strong>الدعم الطارئ:</strong><br>
+                            24/7 عبر البريد الإلكتروني
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fas fa-book"></i>
+                            الأسئلة الشائعة
+                        </div>
+                    </div>
+                    <div class="section-content">
+                        <div style="margin-bottom: 15px;">
+                            <h5 style="color: #1e3a8a; margin-bottom: 8px;">كيف يمكنني إضافة عضو جديد؟</h5>
+                            <p style="color: #6b7280;">اذهب إلى قسم "إدارة الأعضاء" واضغط على "إضافة عضو جديد" ثم املأ النموذج بالمعلومات المطلوبة.</p>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <h5 style="color: #1e3a8a; margin-bottom: 8px;">كيف يمكنني تجديد اشتراك؟</h5>
+                            <p style="color: #6b7280;">اذهب إلى قسم "الاشتراكات" واختر نوع الاشتراك المناسب ثم اتبع الخطوات.</p>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <h5 style="color: #1e3a8a; margin-bottom: 8px;">كيف يمكنني طلب تحويل عضوية؟</h5>
+                            <p style="color: #6b7280;">اذهب إلى قسم "التحويلات" واختر نوع التحويل المناسب ثم املأ النموذج.</p>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <h5 style="color: #1e3a8a; margin-bottom: 8px;">كيف يمكنني تصدير التقارير؟</h5>
+                            <p style="color: #6b7280;">في أي قسم يحتوي على جداول، ستجد زر "تصدير Excel" لتحميل البيانات.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => {
+                section.classList.remove('section-visible');
+                section.classList.add('section-hidden');
+            });
+
+            // Show selected section
+            document.getElementById(sectionId).classList.remove('section-hidden');
+            document.getElementById(sectionId).classList.add('section-visible');
+
+            // Update sidebar navigation
+            const sidebarItems = document.querySelectorAll('.sidebar-item');
+            sidebarItems.forEach(item => item.classList.remove('active'));
+            
+            // Find and activate the clicked sidebar item
+            const clickedItem = event.target.closest('.sidebar-item');
+            if (clickedItem) {
+                clickedItem.classList.add('active');
+            }
+
+            // Close sidebar on mobile after selection
+            if (window.innerWidth <= 768) {
+                toggleSidebar();
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        function showAddMemberForm() {
+            alert('سيتم فتح نموذج إضافة عضو جديد');
+        }
+
+        function showTransferDetails() {
+            const transferType = document.getElementById('transferType').value;
+            
+            // إخفاء جميع تفاصيل التحويلات
+            document.getElementById('daughterTransfer').style.display = 'none';
+            document.getElementById('divorceTransfer').style.display = 'none';
+            document.getElementById('deathTransfer').style.display = 'none';
+            
+            // عرض التفاصيل المطلوبة
+            if (transferType === 'daughter') {
+                document.getElementById('daughterTransfer').style.display = 'block';
+            } else if (transferType === 'divorce') {
+                document.getElementById('divorceTransfer').style.display = 'block';
+            } else if (transferType === 'death') {
+                document.getElementById('deathTransfer').style.display = 'block';
+            }
+        }
+
+        // Add some interactivity
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click handlers for table actions
+            const actionButtons = document.querySelectorAll('.btn-danger');
+            actionButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (confirm('هل أنت متأكد من حذف هذا العنصر؟')) {
+                        this.closest('tr').remove();
+                        showAlert('تم حذف العنصر بنجاح', 'success');
+                    }
+                });
+            });
+
+            // Add form submission handlers
+            const forms = document.querySelectorAll('.form-input, .form-select');
+            forms.forEach(input => {
+                input.addEventListener('change', function() {
+                    console.log('تم تحديث الحقل:', this.value);
+                });
+            });
+
+            // Add save button handlers
+            const saveButtons = document.querySelectorAll('.btn-primary');
+            saveButtons.forEach(button => {
+                if (button.textContent.includes('حفظ') || button.textContent.includes('إضافة') || button.textContent.includes('إرسال')) {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        showLoading(this);
+                        setTimeout(() => {
+                            hideLoading(this);
+                            showAlert('تم حفظ البيانات بنجاح', 'success');
+                        }, 1500);
+                    });
+                }
+            });
+
+            // Add search functionality
+            const searchInputs = document.querySelectorAll('input[placeholder*="بحث"], input[placeholder*="أدخل"]');
+            searchInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    // Add search logic here
+                    console.log('Searching for:', this.value);
+                });
+            });
+        });
+
+        // Utility functions
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            const mainContent = document.querySelector('.main-content');
+            mainContent.insertBefore(alertDiv, mainContent.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+
+        function showLoading(button) {
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+            button.classList.add('loading');
+            button.disabled = true;
+            button.dataset.originalText = originalText;
+        }
+
+        function hideLoading(button) {
+            button.innerHTML = button.dataset.originalText;
+            button.classList.remove('loading');
+            button.disabled = false;
+        }
+
+        // Enhanced table functionality
+        function sortTable(table, column) {
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            rows.sort((a, b) => {
+                const aText = a.cells[column].textContent;
+                const bText = b.cells[column].textContent;
+                return aText.localeCompare(bText, 'ar');
+            });
+            
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // Add export functionality
+        function exportTable(tableId, format = 'csv') {
+            const table = document.getElementById(tableId);
+            const rows = Array.from(table.querySelectorAll('tr'));
+            let csv = '';
+            
+            rows.forEach(row => {
+                const cells = Array.from(row.querySelectorAll('th, td'));
+                const rowData = cells.map(cell => `"${cell.textContent.trim()}"`).join(',');
+                csv += rowData + '\n';
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `export_${tableId}_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        // Keyboard navigation support
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                showAlert('تم حفظ البيانات تلقائياً', 'success');
+            }
+        });
+
+        // Auto-save functionality
+        let autoSaveTimer;
+        function setupAutoSave() {
+            const inputs = document.querySelectorAll('.form-input, .form-select, .form-textarea');
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    clearTimeout(autoSaveTimer);
+                    autoSaveTimer = setTimeout(() => {
+                        console.log('Auto-saving...');
+                        showAlert('تم الحفظ التلقائي', 'success');
+                    }, 2000);
+                });
+            });
+        }
+
+        // Initialize auto-save
+        setupAutoSave();
+
+        // Global search functionality
+        function globalSearch(query) {
+            const sections = document.querySelectorAll('.content-section');
+            let results = [];
+            
+            sections.forEach(section => {
+                const text = section.textContent.toLowerCase();
+                if (text.includes(query.toLowerCase())) {
+                    results.push(section.id);
+                }
+            });
+            
+            if (results.length > 0) {
+                showAlert(`تم العثور على ${results.length} نتيجة`, 'success');
+                // يمكن إضافة منطق لعرض النتائج هنا
+            } else {
+                showAlert('لم يتم العثور على نتائج', 'warning');
+            }
+        }
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                const query = prompt('أدخل كلمة البحث:');
+                if (query) {
+                    globalSearch(query);
+                }
+            }
+        });
+
+        // Add welcome message
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                showAlert('مرحباً بك في نظام إدارة الاشتراكات والتحويلات!', 'success');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
